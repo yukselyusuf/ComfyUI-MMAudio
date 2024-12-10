@@ -1,9 +1,6 @@
 import os
 import torch
-import json
-import gc
 from torchvision.transforms import v2
-import torchaudio
 from accelerate import init_empty_weights
 from accelerate.utils import set_module_tensor_to_device
 
@@ -17,10 +14,9 @@ if not "mmaudio" in folder_paths.folder_names_and_paths:
     folder_paths.add_model_folder_path("mmaudio", os.path.join(folder_paths.models_dir, "mmaudio"))
 
 
-from .mmaudio.eval_utils import (ModelConfig, all_model_cfg, generate,
-                                load_video, make_video, setup_eval_logging)
+from .mmaudio.eval_utils import generate
 from .mmaudio.model.flow_matching import FlowMatching
-from .mmaudio.model.networks import MMAudio, get_my_mmaudio
+from .mmaudio.model.networks import MMAudio
 from .mmaudio.model.utils.features_utils import FeaturesUtils
 from .mmaudio.model.sequence_config import (CONFIG_16K, CONFIG_44K, SequenceConfig)
 
@@ -164,8 +160,8 @@ class MMAudioVoCoderLoader:
             },
         }
 
-    RETURN_TYPES = ("MMAUDIO_FEATUREUTILS",)
-    RETURN_NAMES = ("mmaudio_featureutils", )
+    RETURN_TYPES = ("VOCODER_MODEL",)
+    RETURN_NAMES = ("mmaudio_vocoder", )
     FUNCTION = "loadmodel"
     CATEGORY = "MMAudio"
 
@@ -204,16 +200,13 @@ class MMAudioFeatureUtilsLoader:
 
         vae_path = folder_paths.get_full_path_or_raise("mmaudio", vae_model)
         synchformer_path = folder_paths.get_full_path_or_raise("mmaudio", synchformer_model)
-        if bigvgan_vocoder_model is not None:
-            bigvgan_16k_path = folder_paths.get_full_path_or_raise("mmaudio", bigvgan_vocoder_model)
-        else:
-            bigvgan_16k_path = None
+       
 
         feature_utils = FeaturesUtils(tod_vae_ckpt=vae_path,
                                   synchformer_ckpt=synchformer_path,
                                   enable_conditions=True,
                                   mode=mode,
-                                  bigvgan_vocoder_ckpt=bigvgan_16k_path).eval().to(device=device, dtype=dtype)
+                                  bigvgan_vocoder_ckpt=bigvgan_vocoder_model).eval().to(device=device, dtype=dtype)
         return (feature_utils,)
 
 #region sampling

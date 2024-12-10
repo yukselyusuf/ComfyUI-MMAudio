@@ -2,3 +2,4 @@ librosa
 torchdiffeq
 einops
 timm
+omegaconf

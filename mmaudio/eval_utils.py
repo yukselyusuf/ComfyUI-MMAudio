@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Optional
 
 import torch
-from colorlog import ColoredFormatter
+#from colorlog import ColoredFormatter
 from torchvision.transforms import v2
 from torio.io import StreamingMediaDecoder, StreamingMediaEncoder
 
