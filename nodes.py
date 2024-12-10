@@ -126,7 +126,7 @@ class MMAudioModelLoader:
                     latent_seq_len=345,
                     clip_seq_len=64,
                     sync_seq_len=192
-                    ).eval().to(device=device, dtype=base_dtype)
+                    )
         elif "large" in mmaudio_model:
             num_heads = 14
             model = MMAudio(latent_dim=40,
@@ -141,11 +141,14 @@ class MMAudioModelLoader:
                     clip_seq_len=64,
                     sync_seq_len=192,
                     v2=True
-                    ).eval().to(device=device, dtype=base_dtype)
-        
+                    )
+        model = model.eval().to(device=device, dtype=base_dtype)
         model.load_weights(mmaudio_sd)
-        log.info(f'Loaded weights from {mmaudio_model_path}')
-        model.seq_cfg = CONFIG_44K
+        log.info(f'Loaded MMAudio model weights from {mmaudio_model_path}')
+        if "44" in mmaudio_model:
+            model.seq_cfg = CONFIG_44K
+        elif "16" in mmaudio_model:
+            model.seq_cfg = CONFIG_16K
         
        
         return (model,)
