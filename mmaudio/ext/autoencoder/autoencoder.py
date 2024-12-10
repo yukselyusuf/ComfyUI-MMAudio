@@ -13,12 +13,11 @@ class AutoEncoderModule(nn.Module):
 
     def __init__(self,
                  *,
-                 vae_ckpt_path,
+                 vae_state_dict,
                  vocoder_ckpt_path: Optional[str] = None,
                  mode: Literal['16k', '44k']):
         super().__init__()
         self.vae: VAE = get_my_vae(mode).eval()
-        vae_state_dict = torch.load(vae_ckpt_path, weights_only=True, map_location='cpu')
         self.vae.load_state_dict(vae_state_dict)
         self.vae.remove_weight_norm()
 

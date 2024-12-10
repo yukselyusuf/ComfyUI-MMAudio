@@ -36,7 +36,7 @@ class FeaturesUtils(nn.Module):
     def __init__(
         self,
         *,
-        tod_vae_ckpt: Optional[str] = None,
+        vae_state_dict: Optional[str] = None,
         bigvgan_vocoder_ckpt: Optional[str] = None,
         synchformer_sd: Optional[str] = None,
         enable_conditions: bool = True,
@@ -60,8 +60,8 @@ class FeaturesUtils(nn.Module):
             self.synchformer = None
             self.tokenizer = None
 
-        if tod_vae_ckpt is not None:
-            self.tod = AutoEncoderModule(vae_ckpt_path=tod_vae_ckpt,
+        if vae_state_dict is not None:
+            self.tod = AutoEncoderModule(vae_state_dict=vae_state_dict,
                                          vocoder_ckpt_path=bigvgan_vocoder_ckpt,
                                          mode=mode)
         else:
