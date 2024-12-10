@@ -1,5 +1,5 @@
 librosa
 torchdiffeq
 einops
-timm
+timm>=1.0.8
 omegaconf
