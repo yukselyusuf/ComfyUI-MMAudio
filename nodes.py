@@ -223,13 +223,17 @@ class MMAudioSampler:
             "required": {
                 "mmaudio_model": ("MMAUDIO_MODEL",),
                 "feature_utils": ("MMAUDIO_FEATUREUTILS",),
-                "images": ("IMAGE",),
                 "duration": ("FLOAT", {"default": 8, "step": 0.01, "tooltip": "Duration of the audio in seconds"}),
                 "steps": ("INT", {"default": 25, "step": 1, "tooltip": "Number of steps to interpolate"}),
                 "cfg": ("FLOAT", {"default": 4.5, "step": 0.1, "tooltip": "Strength of the conditioning"}),
                 "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
                 "prompt": ("STRING", {"default": "", "multiline": True} ),
                 "negative_prompt": ("STRING", {"default": "", "multiline": True} ),
+                "mask_away_clip": ("BOOLEAN", {"default": False, "tooltip": "If true, the clip video will be masked away"}),
+                "force_offload": ("BOOLEAN", {"default": True, "tooltip": "If true, the model will be offloaded to the offload device"}),
+            },
+            "optional": {
+                "images": ("IMAGE",),
             },
         }
 
@@ -238,31 +242,32 @@ class MMAudioSampler:
     FUNCTION = "sample"
     CATEGORY = "MMAudio"
 
-    def sample(self, images, mmaudio_model, seed, feature_utils, duration, steps, cfg, prompt, negative_prompt):
+    def sample(self, mmaudio_model, seed, feature_utils, duration, steps, cfg, prompt, negative_prompt, mask_away_clip, force_offload, images=None):
         device = mm.get_torch_device()
-        #clip_frames = images
+        offload_device = mm.unet_offload_device()
         rng = torch.Generator(device=device)
         rng.manual_seed(seed)
 
         seq_cfg = mmaudio_model.seq_cfg
-
-        images = images.to(device=device)
+       
         if images is not None:
+            images = images.to(device=device)
             clip_frames, sync_frames, duration = process_video_tensor(images, duration)
             print("clip_frames", clip_frames.shape, "sync_frames", sync_frames.shape, "duration", duration)
-            mask_away_clip = False
             if mask_away_clip:
                 clip_frames = None
             else:
                 clip_frames = clip_frames.unsqueeze(0)
             sync_frames = sync_frames.unsqueeze(0)
-        print(clip_frames.shape, sync_frames.shape, duration)
-
+        else:
+            clip_frames = None
+            sync_frames = None
+        
         seq_cfg.duration = duration
         mmaudio_model.update_seq_lengths(seq_cfg.latent_seq_len, seq_cfg.clip_seq_len, seq_cfg.sync_seq_len)
 
         scheduler = FlowMatching(min_sigma=0, inference_mode='euler', num_steps=steps)
-        
+        mmaudio_model.to(device)
         audios = generate(clip_frames,
                       sync_frames, [prompt],
                       negative_text=[negative_prompt],
@@ -271,6 +276,9 @@ class MMAudioSampler:
                       fm=scheduler,
                       rng=rng,
                       cfg_strength=cfg)
+        if force_offload:
+            mmaudio_model.to(offload_device)
+            mm.soft_empty_cache()
         waveform = audios.float().cpu()
         #torchaudio.save("test.wav", waveform, 44100)
         audio = {
