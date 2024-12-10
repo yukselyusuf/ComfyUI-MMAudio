@@ -1,42 +1,7 @@
 {
-  "last_node_id": 101,
-  "last_link_id": 165,
+  "last_node_id": 102,
+  "last_link_id": 166,
   "nodes": [
-    {
-      "id": 86,
-      "type": "MMAudioFeatureUtilsLoader",
-      "pos": [
-        1676.7081298828125,
-        70.69841766357422
-      ],
-      "size": [
-        376.26666259765625,
-        130
-      ],
-      "flags": {},
-      "order": 0,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "mmaudio_featureutils",
-          "type": "MMAUDIO_FEATUREUTILS",
-          "links": [
-            153
-          ],
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "MMAudioFeatureUtilsLoader"
-      },
-      "widgets_values": [
-        "v1-44.pth",
-        "synchformer_state_dict.pth",
-        "best_netG.pt",
-        "fp16"
-      ]
-    },
     {
       "id": 91,
       "type": "VHS_LoadVideo",
@@ -46,10 +11,10 @@
       ],
       "size": [
         417.6617736816406,
-        500.8845520019531
+        501.3416748046875
       ],
       "flags": {},
-      "order": 1,
+      "order": 0,
       "mode": 0,
       "inputs": [
         {
@@ -132,7 +97,7 @@
         82.26664733886719
       ],
       "flags": {},
-      "order": 2,
+      "order": 1,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -151,61 +116,6 @@
       "widgets_values": [
         "mmaudio_small_44k.pth",
         "fp16"
-      ]
-    },
-    {
-      "id": 92,
-      "type": "MMAudioSampler",
-      "pos": [
-        2354.90869140625,
-        -136.32687377929688
-      ],
-      "size": [
-        400,
-        286
-      ],
-      "flags": {},
-      "order": 3,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "mmaudio_model",
-          "type": "MMAUDIO_MODEL",
-          "link": 152
-        },
-        {
-          "name": "feature_utils",
-          "type": "MMAUDIO_FEATUREUTILS",
-          "link": 153
-        },
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 158
-        }
-      ],
-      "outputs": [
-        {
-          "name": "audio",
-          "type": "AUDIO",
-          "links": [
-            163,
-            165
-          ],
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "MMAudioSampler"
-      },
-      "widgets_values": [
-        2.5,
-        25,
-        4.5,
-        1,
-        "fixed",
-        "darth vader",
-        ""
       ]
     },
     {
@@ -271,7 +181,7 @@
           "hidden": false,
           "paused": false,
           "params": {
-            "filename": "AnimateDiff_00007-audio.mp4",
+            "filename": "AnimateDiff_00008-audio.mp4",
             "subfolder": "",
             "type": "temp",
             "format": "video/h264-mp4",
@@ -309,6 +219,102 @@
       "widgets_values": [
         null
       ]
+    },
+    {
+      "id": 92,
+      "type": "MMAudioSampler",
+      "pos": [
+        2354.90869140625,
+        -136.32687377929688
+      ],
+      "size": [
+        411.29339599609375,
+        334.3999938964844
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "mmaudio_model",
+          "type": "MMAUDIO_MODEL",
+          "link": 152
+        },
+        {
+          "name": "feature_utils",
+          "type": "MMAUDIO_FEATUREUTILS",
+          "link": 166
+        },
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 158
+        }
+      ],
+      "outputs": [
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": [
+            163,
+            165
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "MMAudioSampler"
+      },
+      "widgets_values": [
+        2.5,
+        25,
+        4.5,
+        1,
+        "fixed",
+        "darth vader",
+        ""
+      ]
+    },
+    {
+      "id": 102,
+      "type": "MMAudioFeatureUtilsLoader",
+      "pos": [
+        1717.04150390625,
+        52.14505386352539
+      ],
+      "size": [
+        401.7265930175781,
+        130
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "bigvgan_vocoder_model",
+          "type": "VOCODER_MODEL",
+          "link": null,
+          "shape": 7
+        }
+      ],
+      "outputs": [
+        {
+          "name": "mmaudio_featureutils",
+          "type": "MMAUDIO_FEATUREUTILS",
+          "links": [
+            166
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "MMAudioFeatureUtilsLoader"
+      },
+      "widgets_values": [
+        "v1-44.pth",
+        "synchformer_state_dict.pth",
+        "44k",
+        "fp16"
+      ]
     }
   ],
   "links": [
@@ -319,14 +325,6 @@
       92,
       0,
       "MMAUDIO_MODEL"
-    ],
-    [
-      153,
-      86,
-      0,
-      92,
-      1,
-      "MMAUDIO_FEATUREUTILS"
     ],
     [
       158,
@@ -359,6 +357,14 @@
       97,
       1,
       "AUDIO"
+    ],
+    [
+      166,
+      102,
+      0,
+      92,
+      1,
+      "MMAUDIO_FEATUREUTILS"
     ]
   ],
   "groups": [],
@@ -367,8 +373,8 @@
     "ds": {
       "scale": 0.8264462809917354,
       "offset": [
-        -1512.310515268621,
-        374.07335546888595
+        -1385.390515268621,
+        366.95666418470614
       ]
     }
   },

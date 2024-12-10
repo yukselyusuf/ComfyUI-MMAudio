@@ -154,7 +154,25 @@ class MMAudioModelLoader:
         return (model,)
     
 #region Features Utils
+class MMAudioVoCoderLoader:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "vocoder_model": (folder_paths.get_filename_list("mmaudio"), {"tooltip": "These models are loaded from 'ComfyUI/models/mmaudio'"}),
+                
+            },
+        }
 
+    RETURN_TYPES = ("MMAUDIO_FEATUREUTILS",)
+    RETURN_NAMES = ("mmaudio_featureutils", )
+    FUNCTION = "loadmodel"
+    CATEGORY = "MMAudio"
+
+    def loadmodel(self, vocoder_model):
+        vocoder_model_path = folder_paths.get_full_path_or_raise("mmaudio", vocoder_model)
+        return (vocoder_model_path,)
+        
 class MMAudioFeatureUtilsLoader:
     @classmethod
     def INPUT_TYPES(s):
@@ -162,11 +180,12 @@ class MMAudioFeatureUtilsLoader:
             "required": {
                 "vae_model": (folder_paths.get_filename_list("mmaudio"), {"tooltip": "These models are loaded from 'ComfyUI/models/mmaudio'"}),
                 "synchformer_model": (folder_paths.get_filename_list("mmaudio"), {"tooltip": "These models are loaded from 'ComfyUI/models/mmaudio'"}),
-                "bigvgan_vocoder_model": (folder_paths.get_filename_list("mmaudio"), {"tooltip": "These models are loaded from 'ComfyUI/models/mmaudio'"}),
             },
             "optional": {
+              "bigvgan_vocoder_model": ("VOCODER_MODEL", {"tooltip": "These models are loaded from 'ComfyUI/models/mmaudio'"}),
+                "mode": (["16k", "44k"], {"default": "44k"}),
                 "precision": (["fp16", "fp32", "bf16"],
-                    {"default": "bf16"}
+                    {"default": "fp16"}
                 ),
             }
         }
@@ -176,7 +195,7 @@ class MMAudioFeatureUtilsLoader:
     FUNCTION = "loadmodel"
     CATEGORY = "MMAudio"
 
-    def loadmodel(self, vae_model, precision, synchformer_model, bigvgan_vocoder_model):
+    def loadmodel(self, vae_model, precision, synchformer_model, mode, bigvgan_vocoder_model=None):
         
         device = mm.get_torch_device()
         offload_device = mm.unet_offload_device()
@@ -185,14 +204,16 @@ class MMAudioFeatureUtilsLoader:
 
         vae_path = folder_paths.get_full_path_or_raise("mmaudio", vae_model)
         synchformer_path = folder_paths.get_full_path_or_raise("mmaudio", synchformer_model)
-        bigvgan_16k_path = folder_paths.get_full_path_or_raise("mmaudio", bigvgan_vocoder_model)
+        if bigvgan_vocoder_model is not None:
+            bigvgan_16k_path = folder_paths.get_full_path_or_raise("mmaudio", bigvgan_vocoder_model)
+        else:
+            bigvgan_16k_path = None
 
         feature_utils = FeaturesUtils(tod_vae_ckpt=vae_path,
                                   synchformer_ckpt=synchformer_path,
                                   enable_conditions=True,
-                                  mode="44k",
+                                  mode=mode,
                                   bigvgan_vocoder_ckpt=bigvgan_16k_path).eval().to(device=device, dtype=dtype)
-
         return (feature_utils,)
 
 #region sampling
@@ -264,9 +285,11 @@ NODE_CLASS_MAPPINGS = {
     "MMAudioModelLoader": MMAudioModelLoader,
     "MMAudioFeatureUtilsLoader": MMAudioFeatureUtilsLoader,
     "MMAudioSampler": MMAudioSampler,
+    "MMAudioVoCoderLoader": MMAudioVoCoderLoader,
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
     "MMAudioModelLoader": "MMAudio ModelLoader",
     "MMAudioFeatureUtilsLoader": "MMAudio FeatureUtilsLoader",
     "MMAudioSampler": "MMAudio Sampler",
+    "MMAudioVoCoderLoader": "MMAudio VoCoderLoader",
     }
