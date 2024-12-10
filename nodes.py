@@ -52,8 +52,16 @@ def process_video_tensor(video_tensor: torch.Tensor, duration_sec: float) -> tup
     clip_frames_count = int(_CLIP_FPS * duration_sec)
     sync_frames_count = int(_SYNC_FPS * duration_sec)
 
-    if total_frames < clip_frames_count or total_frames < sync_frames_count:
-        raise ValueError("Video tensor does not have enough frames for the specified duration.")
+    # Adjust duration if there are not enough frames
+    if total_frames < clip_frames_count:
+        log.warning(f'Clip video is too short: {total_frames / _CLIP_FPS:.2f} < {duration_sec:.2f}')
+        clip_frames_count = total_frames
+        duration_sec = total_frames / _CLIP_FPS
+
+    if total_frames < sync_frames_count:
+        log.warning(f'Sync video is too short: {total_frames / _SYNC_FPS:.2f} < {duration_sec:.2f}, truncating to {total_frames / _SYNC_FPS:.2f} sec')
+        sync_frames_count = total_frames
+        duration_sec = total_frames / _SYNC_FPS
 
     clip_frames = video_tensor[:clip_frames_count]
     sync_frames = video_tensor[:sync_frames_count]
@@ -67,15 +75,15 @@ def process_video_tensor(video_tensor: torch.Tensor, duration_sec: float) -> tup
     clip_length_sec = clip_frames.shape[0] / _CLIP_FPS
     sync_length_sec = sync_frames.shape[0] / _SYNC_FPS
 
-    if clip_length_sec < duration_sec:
-        log.warning(f'Clip video is too short: {clip_length_sec:.2f} < {duration_sec:.2f}')
-        log.warning(f'Truncating to {clip_length_sec:.2f} sec')
-        duration_sec = clip_length_sec
+    # if clip_length_sec < duration_sec:
+    #     log.warning(f'Clip video is too short: {clip_length_sec:.2f} < {duration_sec:.2f}')
+    #     log.warning(f'Truncating to {clip_length_sec:.2f} sec')
+    #     duration_sec = clip_length_sec
 
-    if sync_length_sec < duration_sec:
-        log.warning(f'Sync video is too short: {sync_length_sec:.2f} < {duration_sec:.2f}')
-        log.warning(f'Truncating to {sync_length_sec:.2f} sec')
-        duration_sec = sync_length_sec
+    # if sync_length_sec < duration_sec:
+    #     log.warning(f'Sync video is too short: {sync_length_sec:.2f} < {duration_sec:.2f}')
+    #     log.warning(f'Truncating to {sync_length_sec:.2f} sec')
+    #     duration_sec = sync_length_sec
 
     clip_frames = clip_frames[:int(_CLIP_FPS * duration_sec)]
     sync_frames = sync_frames[:int(_SYNC_FPS * duration_sec)]
