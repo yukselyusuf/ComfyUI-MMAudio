@@ -38,7 +38,7 @@ class FeaturesUtils(nn.Module):
         *,
         tod_vae_ckpt: Optional[str] = None,
         bigvgan_vocoder_ckpt: Optional[str] = None,
-        synchformer_ckpt: Optional[str] = None,
+        synchformer_sd: Optional[str] = None,
         enable_conditions: bool = True,
         mode=Literal['16k', '44k'],
     ):
@@ -52,8 +52,7 @@ class FeaturesUtils(nn.Module):
             self.clip_model = patch_clip(self.clip_model)
 
             self.synchformer = Synchformer()
-            self.synchformer.load_state_dict(
-                torch.load(synchformer_ckpt, weights_only=True, map_location='cpu'))
+            self.synchformer.load_state_dict(synchformer_sd)
 
             self.tokenizer = open_clip.get_tokenizer('ViT-H-14-378-quickgelu')  # same as 'ViT-H-14'
         else:

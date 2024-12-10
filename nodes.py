@@ -204,10 +204,11 @@ class MMAudioFeatureUtilsLoader:
 
         vae_path = folder_paths.get_full_path_or_raise("mmaudio", vae_model)
         synchformer_path = folder_paths.get_full_path_or_raise("mmaudio", synchformer_model)
+        synchformer_sd = load_torch_file(synchformer_path, device=offload_device)
        
 
         feature_utils = FeaturesUtils(tod_vae_ckpt=vae_path,
-                                  synchformer_ckpt=synchformer_path,
+                                  synchformer_sd=synchformer_sd,
                                   enable_conditions=True,
                                   mode=mode,
                                   bigvgan_vocoder_ckpt=bigvgan_vocoder_model).eval().to(device=device, dtype=dtype)
