@@ -259,58 +259,14 @@ class MMAudioSampler:
         }
 
         return (audio,)
-
-class TorchaudioToVHS:
-    @classmethod
-    def INPUT_TYPES(s):
-        return {"required": {
-            "audio": ("TORCHAUDIOTENSOR",),
-            "sample_rate": ("INT", {"default": 44100, "min": 0, "max": 48000}),
-             },
-        }
-
-    RETURN_TYPES = ("AUDIO", "INT",)
-    RETURN_NAMES = ("audio", "audio_dur",)
-    FUNCTION = "process"
-    CATEGORY = "MMAudio"
-
-    def process(self, audio, sample_rate):
-
-        # Save generated audio to a WAV file
-        audio_path = os.path.join(script_directory, "temp", "gen_audio.wav")
-        
-        torchaudio.save(audio_path, audio, sample_rate)
-        audio_info = torchaudio.info(audio_path)
-        
-        audio_dur = audio_info.num_frames / audio_info.sample_rate
- 
-        try:
-            from imageio_ffmpeg import get_ffmpeg_exe
-            imageio_ffmpeg_path = get_ffmpeg_exe()
-        except:
-            print("Failed to import imageio_ffmpeg")
-        args = [imageio_ffmpeg_path, "-v", "error", "-i", audio_path]
-        try:
-            import subprocess
-            res =  subprocess.run(args + ["-f", "wav", "-"],
-                                stdout=subprocess.PIPE, check=True).stdout
-        except:
-            print("Failed to run ffmpeg")
-  
-        audio_lambda = lambda: res
-
-        # Return the new audio_lambda
-        return (audio_lambda, audio_dur,)
         
 NODE_CLASS_MAPPINGS = {
     "MMAudioModelLoader": MMAudioModelLoader,
     "MMAudioFeatureUtilsLoader": MMAudioFeatureUtilsLoader,
     "MMAudioSampler": MMAudioSampler,
-    "TorchaudioToVHS": TorchaudioToVHS,
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
     "MMAudioModelLoader": "MMAudio ModelLoader",
     "MMAudioFeatureUtilsLoader": "MMAudio FeatureUtilsLoader",
     "MMAudioSampler": "MMAudio Sampler",
-    "TorchaudioToVHS": "Torchaudio to VHS",
     }
