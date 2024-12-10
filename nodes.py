@@ -112,8 +112,9 @@ class MMAudioModelLoader:
         mmaudio_model_path = folder_paths.get_full_path_or_raise("mmaudio", mmaudio_model)
         mmaudio_sd = load_torch_file(mmaudio_model_path, device=offload_device)
 
-        num_heads = 7
-        small_model = MMAudio(
+        if "small" in mmaudio_model:
+            num_heads = 7
+            model = MMAudio(
                     latent_dim=40,
                     clip_dim=1024,
                     sync_dim=768,
@@ -126,22 +127,22 @@ class MMAudioModelLoader:
                     clip_seq_len=64,
                     sync_seq_len=192
                     ).eval().to(device=device, dtype=base_dtype)
-        # load a pretrained model
-        # num_heads = 14
-        # model = MMAudio(latent_dim=40,
-        #            clip_dim=1024,
-        #            sync_dim=768,
-        #            text_dim=1024,
-        #            hidden_dim=64 * num_heads,
-        #            depth=21,
-        #            fused_depth=14,
-        #            num_heads=num_heads,
-        #            latent_seq_len=345,
-        #            clip_seq_len=64,
-        #            sync_seq_len=192,
-        #            v2=True
-        #            ).eval().to(device=device, dtype=base_dtype)
-        model = small_model
+        elif "large" in mmaudio_model:
+            num_heads = 14
+            model = MMAudio(latent_dim=40,
+                    clip_dim=1024,
+                    sync_dim=768,
+                    text_dim=1024,
+                    hidden_dim=64 * num_heads,
+                    depth=21,
+                    fused_depth=14,
+                    num_heads=num_heads,
+                    latent_seq_len=345,
+                    clip_seq_len=64,
+                    sync_seq_len=192,
+                    v2=True
+                    ).eval().to(device=device, dtype=base_dtype)
+        
         model.load_weights(mmaudio_sd)
         log.info(f'Loaded weights from {mmaudio_model_path}')
         model.seq_cfg = CONFIG_44K
