@@ -2,14 +2,12 @@
 
 ## WIP WIP WIP
 
+
+https://github.com/user-attachments/assets/9515c0f6-cc5d-4dfe-a642-f841a1a2dba5
+
+
 Models are loaded from `ComfyUI/models/mmaudio`
 
 Safetensors available here:
 
 https://huggingface.co/Kijai/MMAudio_safetensors/tree/main
-
-Some models are still autodownloaded by the underlaying code, for now:
-
-https://huggingface.co/apple/DFN5B-CLIP-ViT-H-14-378
-
-https://huggingface.co/nvidia/bigvgan_v2_44khz_128band_512x
