@@ -255,17 +255,7 @@ class MMAudioFeatureUtilsLoader:
         vae = vae.eval().to(device=device, dtype=dtype)
 
         #clip
-        clip_path = os.path.join(download_path, "apple", "DFN5B-CLIP-ViT-H-14-384")
-        if not os.path.exists(clip_path):
-            log.info(f"Downloading Apple DFN5B-CLIP-ViT-H-14-384 model to: {clip_path}")
-            from huggingface_hub import snapshot_download
-
-            snapshot_download(
-                repo_id="apple/DFN5B-CLIP-ViT-H-14-384",
-                ignore_patterns=["pytorch_model.bin"],
-                local_dir=clip_path,
-                local_dir_use_symlinks=False,
-            )
+       
         clip_model_path = folder_paths.get_full_path_or_raise("mmaudio", clip_model)
         clip_config_path = os.path.join(script_directory, "configs", "DFN5B-CLIP-ViT-H-14-384.json")
         with open(clip_config_path) as f:
