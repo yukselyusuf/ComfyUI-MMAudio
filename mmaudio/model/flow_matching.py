@@ -7,7 +7,8 @@ from torchdiffeq import odeint
 # from torchcfm.conditional_flow_matching import ExactOptimalTransportConditionalFlowMatcher
 
 log = logging.getLogger()
-
+from comfy.utils import ProgressBar
+from tqdm import tqdm
 
 # Partially from https://github.com/gle-bellier/flow-matching
 class FlowMatching:
@@ -68,11 +69,15 @@ class FlowMatching:
         elif self.inference_mode == 'euler':
             x = x0
             steps = torch.linspace(t0, t1 - self.min_sigma, self.num_steps + 1)
+            comfy_pbar = ProgressBar(len(steps)-1)
+            tqdm_pbar = tqdm(total=len(steps) -1, desc='Flow Matching')
             for ti, t in enumerate(steps[:-1]):
                 flow = fn(t, x)
                 next_t = steps[ti + 1]
                 dt = next_t - t
                 x = x + dt * flow
+                comfy_pbar.update(1)
+                tqdm_pbar.update(1)
 
             # return odeint(fn,
             #               x0,

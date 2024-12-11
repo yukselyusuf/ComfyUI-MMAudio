@@ -5,7 +5,6 @@ import torch.nn as nn
 
 from ...ext.autoencoder.vae import VAE, get_my_vae
 from ...ext.bigvgan import BigVGAN
-from ...ext.bigvgan_v2.bigvgan import BigVGAN as BigVGANv2
 from ...model.utils.distributions import DiagonalGaussianDistribution
 
 
@@ -14,22 +13,16 @@ class AutoEncoderModule(nn.Module):
     def __init__(self,
                  *,
                  vae_state_dict,
-                 vocoder_ckpt_path: Optional[str] = None,
+                 bigvgan_vocoder: Optional[BigVGAN] = None,
                  mode: Literal['16k', '44k']):
         super().__init__()
         self.vae: VAE = get_my_vae(mode).eval()
         self.vae.load_state_dict(vae_state_dict)
         self.vae.remove_weight_norm()
 
-        if mode == '16k':
-            assert vocoder_ckpt_path is not None
-            self.vocoder = BigVGAN(vocoder_ckpt_path).eval()
-        elif mode == '44k':
-            self.vocoder = BigVGANv2.from_pretrained('nvidia/bigvgan_v2_44khz_128band_512x',
-                                                     use_cuda_kernel=False)
+        self.vocoder = bigvgan_vocoder
+        if mode == '44k':
             self.vocoder.remove_weight_norm()
-        else:
-            raise ValueError(f'Unknown mode: {mode}')
 
         for param in self.parameters():
             param.requires_grad = False

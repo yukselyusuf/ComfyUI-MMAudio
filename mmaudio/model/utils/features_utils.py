@@ -5,13 +5,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from einops import rearrange
-from open_clip import create_model_from_pretrained
 from torchvision.transforms import Normalize
 
-from ...ext.autoencoder import AutoEncoderModule
+
 from ...ext.mel_converter import MelConverter
-from ...ext.synchformer import Synchformer
 from ...model.utils.distributions import DiagonalGaussianDistribution
+from ...ext.bigvgan import BigVGAN
 
 
 def patch_clip(clip_model):
@@ -36,23 +35,22 @@ class FeaturesUtils(nn.Module):
     def __init__(
         self,
         *,
-        vae_state_dict: Optional[str] = None,
-        bigvgan_vocoder_ckpt: Optional[str] = None,
-        synchformer_sd: Optional[str] = None,
+        vae: None,
+        synchformer: None,
+        clip_model: None,
         enable_conditions: bool = True,
-        mode=Literal['16k', '44k'],
     ):
         super().__init__()
 
         if enable_conditions:
-            self.clip_model = create_model_from_pretrained('hf-hub:apple/DFN5B-CLIP-ViT-H-14-384',
-                                                           return_transform=False)
+            #self.clip_model = create_model_from_pretrained('hf-hub:apple/DFN5B-CLIP-ViT-H-14-384',
+            #                                               return_transform=False)
+            self.clip_model = clip_model
             self.clip_preprocess = Normalize(mean=[0.48145466, 0.4578275, 0.40821073],
                                              std=[0.26862954, 0.26130258, 0.27577711])
             self.clip_model = patch_clip(self.clip_model)
 
-            self.synchformer = Synchformer()
-            self.synchformer.load_state_dict(synchformer_sd)
+            self.synchformer = synchformer
 
             self.tokenizer = open_clip.get_tokenizer('ViT-H-14-378-quickgelu')  # same as 'ViT-H-14'
         else:
@@ -60,12 +58,8 @@ class FeaturesUtils(nn.Module):
             self.synchformer = None
             self.tokenizer = None
 
-        if vae_state_dict is not None:
-            self.tod = AutoEncoderModule(vae_state_dict=vae_state_dict,
-                                         vocoder_ckpt_path=bigvgan_vocoder_ckpt,
-                                         mode=mode)
-        else:
-            self.tod = None
+        
+        self.tod = vae
         self.mel_converter = MelConverter()
 
     def compile(self):
