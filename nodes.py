@@ -289,10 +289,12 @@ class MMAudioSampler:
                 "steps": ("INT", {"default": 25, "step": 1, "tooltip": "Number of steps to interpolate"}),
                 "cfg": ("FLOAT", {"default": 4.5, "step": 0.1, "tooltip": "Strength of the conditioning"}),
                 "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
-                "prompt": ("STRING", {"default": "", "multiline": True} ),
-                "negative_prompt": ("STRING", {"default": "", "multiline": True} ),
-                "mask_away_clip": ("BOOLEAN", {"default": False, "tooltip": "If true, the clip video will be masked away"}),
-                "force_offload": ("BOOLEAN", {"default": True, "tooltip": "If true, the model will be offloaded to the offload device"}),
+                "prompt": ("STRING", {"default": "", "multiline": True}),
+                "negative_prompt": ("STRING", {"default": "", "multiline": True}),
+                "mask_away_clip": (
+                "BOOLEAN", {"default": False, "tooltip": "If true, the clip video will be masked away"}),
+                "force_offload": (
+                "BOOLEAN", {"default": True, "tooltip": "If true, the model will be offloaded to the offload device"}),
                 "isExecute": ("BOOLEAN", {"forceInput": True}),
             },
             "optional": {
@@ -301,18 +303,22 @@ class MMAudioSampler:
         }
 
     RETURN_TYPES = ("AUDIO",)
-    RETURN_NAMES = ("audio", )
+    RETURN_NAMES = ("audio",)
     FUNCTION = "sample"
     CATEGORY = "MMAudio"
 
-    def sample(self, mmaudio_model, seed, feature_utils, duration, steps, cfg, prompt, negative_prompt, mask_away_clip, force_offload, images=None):
+    def sample(self, mmaudio_model, seed, feature_utils, duration, steps, cfg, prompt, negative_prompt, mask_away_clip,
+               force_offload, images=None, isExecute=True):
+        if not isExecute:
+            return (None,)
+
         device = mm.get_torch_device()
         offload_device = mm.unet_offload_device()
         rng = torch.Generator(device=device)
         rng.manual_seed(seed)
 
         seq_cfg = mmaudio_model.seq_cfg
-       
+
         if images is not None:
             images = images.to(device=device)
             clip_frames, sync_frames, duration = process_video_tensor(images, duration)
@@ -325,7 +331,7 @@ class MMAudioSampler:
         else:
             clip_frames = None
             sync_frames = None
-        
+
         seq_cfg.duration = duration
         mmaudio_model.update_seq_lengths(seq_cfg.latent_seq_len, seq_cfg.clip_seq_len, seq_cfg.sync_seq_len)
 
@@ -333,19 +339,19 @@ class MMAudioSampler:
         feature_utils.to(device)
         mmaudio_model.to(device)
         audios = generate(clip_frames,
-                      sync_frames, [prompt],
-                      negative_text=[negative_prompt],
-                      feature_utils=feature_utils,
-                      net=mmaudio_model,
-                      fm=scheduler,
-                      rng=rng,
-                      cfg_strength=cfg)
+                          sync_frames, [prompt],
+                          negative_text=[negative_prompt],
+                          feature_utils=feature_utils,
+                          net=mmaudio_model,
+                          fm=scheduler,
+                          rng=rng,
+                          cfg_strength=cfg)
         if force_offload:
             mmaudio_model.to(offload_device)
             feature_utils.to(offload_device)
             mm.soft_empty_cache()
         waveform = audios.float().cpu()
-        #torchaudio.save("test.wav", waveform, 44100)
+        # torchaudio.save("test.wav", waveform, 44100)
         audio = {
             "waveform": waveform,
             "sample_rate": 44100
