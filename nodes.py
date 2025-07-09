@@ -293,7 +293,7 @@ class MMAudioSampler:
                 "negative_prompt": ("STRING", {"default": "", "multiline": True} ),
                 "mask_away_clip": ("BOOLEAN", {"default": False, "tooltip": "If true, the clip video will be masked away"}),
                 "force_offload": ("BOOLEAN", {"default": True, "tooltip": "If true, the model will be offloaded to the offload device"}),
-                "isExecute": ("BOOLEAN", {"default": True}),
+                "isExecute": ("BOOLEAN", {"forceInput": True}),
             },
             "optional": {
                 "images": ("IMAGE",),
