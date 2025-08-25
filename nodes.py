@@ -230,14 +230,9 @@ class MMAudioFeatureUtilsLoader:
         nvidia_bigvgan_vocoder_path = os.path.join(download_path, "nvidia", "bigvgan_v2_44khz_128band_512x")
         if mode == "44k":
             if not os.path.exists(nvidia_bigvgan_vocoder_path):
-                log.info(f"Downloading nvidia bigvgan vocoder model to: {nvidia_bigvgan_vocoder_path}")
-                from huggingface_hub import snapshot_download
-
-                snapshot_download(
-                    repo_id="nvidia/bigvgan_v2_44khz_128band_512x",
-                    ignore_patterns=["*3m*",],
-                    local_dir=nvidia_bigvgan_vocoder_path,
-                    local_dir_use_symlinks=False,
+                raise RuntimeError(
+                    f"BigVGAN model not found at {nvidia_bigvgan_vocoder_path}. "
+                    "Please run download_models.py first to download the required models."
                 )
             
             bigvgan_vocoder = BigVGANv2.from_pretrained(nvidia_bigvgan_vocoder_path).eval().to(device=device, dtype=dtype)
